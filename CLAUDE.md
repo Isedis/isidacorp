@@ -22,7 +22,7 @@
 
 - `npm test` и `npm run build` перед каждым коммитом: `npm test > /dev/null && npm run build && git commit …`.
 - Тесты цикла хода — с подставным клиентом (`tests/session.test.ts`). Живой API в разработке не вызывается.
-- Скриншоты в 390×844: собрать, `npx vite preview --port 4190`, Playwright с подменой `https://api.anthropic.com/**` потоком SSE (пример — в истории сессии; держать сценарий коротким).
+- Скриншоты в 390×844: собрать, `npx vite preview --port 4190`, `NODE_PATH=$(npm root -g) node scripts/e2e.cjs /tmp/shots` — короткая сессия с подменой API потоком SSE, скриншоты каждого экрана.
 
 ## Как работать с автором
 

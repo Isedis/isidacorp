@@ -68,6 +68,16 @@ export function save(c: Campaign, input: { ability: Ability; dc: number; advanta
 
 const enemyById = (c: Campaign, id: string) => c.combat?.enemies.find((e) => e.id === id);
 
+/**
+ * After an attack by whoever holds the turn, the turn passes on by itself: the model needs
+ * one round less per combatant. Returns who acts next, or null outside that case.
+ */
+function passTurn(c: Campaign, actor: string): string | null {
+  const combat = c.combat;
+  if (!combat || combat.order[combat.turn]?.id !== actor) return null;
+  return (nextTurn(c).result as { turn_of: string }).turn_of;
+}
+
 function damageEnemy(c: Campaign, id: string, amount: number): { hp: number; down: boolean; xp: number } {
   const e = enemyById(c, id)!;
   e.hp = Math.max(0, e.hp - amount);
@@ -92,7 +102,7 @@ export function playerAttack(c: Campaign, input: { weapon: string; target: strin
   const attackLine = `d20${advText(input.advantage)} ${diceText(d.rolls)} ${sign(atk.bonus)}${extra ? ` ${sign(extra)} рычаг` : ''} = ${total} против КД ${enemy.ac}`;
   if (!hit) {
     return {
-      result: { hit: false, roll: d.kept, total, ac: enemy.ac, fumble: d.kept === 1 },
+      result: { hit: false, roll: d.kept, total, ac: enemy.ac, fumble: d.kept === 1, next_turn: passTurn(c, 'player') },
       entries: [{ kind: 'roll', title: `${name} → ${enemy.name}`, detail: `${attackLine} — промах`, outcome: d.kept === 1 ? 'fumble' : 'fail' }],
     };
   }
@@ -101,7 +111,7 @@ export function playerAttack(c: Campaign, input: { weapon: string; target: strin
   const after = damageEnemy(c, enemy.id, amount);
   if (after.xp) ch.xp += after.xp;
   return {
-    result: { hit: true, critical: crit, damage: amount, target_hp: after.hp, target_down: after.down, xp_gained: after.xp },
+    result: { hit: true, critical: crit, damage: amount, target_hp: after.hp, target_down: after.down, xp_gained: after.xp, next_turn: passTurn(c, 'player') },
     entries: [{
       kind: 'roll',
       title: `${name} → ${enemy.name}`,
@@ -125,7 +135,7 @@ export function enemyAttack(c: Campaign, input: { enemy: string; advantage: Adva
   const line = `d20${advText(input.advantage)} ${diceText(d.rolls)} ${sign(def.attack.bonus)} = ${total} против КД ${ac}`;
   if (!hit) {
     return {
-      result: { hit: false, total, player_ac: ac },
+      result: { hit: false, total, player_ac: ac, next_turn: passTurn(c, enemy.id) },
       entries: [{ kind: 'roll', title: `${enemy.name}: ${def.attack.name}`, detail: `${line} — мимо`, outcome: 'success' }],
     };
   }
@@ -133,7 +143,7 @@ export function enemyAttack(c: Campaign, input: { enemy: string; advantage: Adva
   const amount = Math.max(1, dmg.total);
   const res = hurt(ch, amount);
   return {
-    result: { hit: true, critical: crit, damage: amount, player_hp: ch.hp, player_down: res.fell, player_dead: res.died },
+    result: { hit: true, critical: crit, damage: amount, player_hp: ch.hp, player_down: res.fell, player_dead: res.died, next_turn: passTurn(c, enemy.id) },
     entries: [{
       kind: 'roll',
       title: `${enemy.name}: ${def.attack.name}`,

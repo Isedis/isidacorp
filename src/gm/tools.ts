@@ -50,13 +50,13 @@ const TOOLS: ToolDef[] = [
   },
   {
     name: 'player_attack',
-    description: 'Атака игрока по врагу в бою оружием. Движок бросает попадание и урон и меняет хиты врага.',
+    description: 'Атака игрока по врагу в бою оружием. Движок бросает попадание и урон, меняет хиты врага и, если был ход игрока, передаёт ход дальше (next_turn в ответе).',
     schema: obj({ weapon: str('id оружия из списка оружия персонажа или fists', [...Object.keys(WEAPONS)]), target: str('id врага из состояния боя'), advantage }),
     run: (c, i, rng) => act.playerAttack(c, i, rng),
   },
   {
     name: 'enemy_attack',
-    description: 'Атака врага по игроку в ход врага. Движок бросает попадание по КД игрока и урон.',
+    description: 'Атака врага по игроку в ход врага. Движок бросает попадание по КД игрока и урон и передаёт ход дальше (next_turn в ответе). Несколько врагов подряд — вызывай сразу все атаки в одном ответе.',
     schema: obj({ enemy: str('id атакующего врага'), advantage }),
     run: (c, i, rng) => act.enemyAttack(c, i, rng),
   },
@@ -89,7 +89,7 @@ const TOOLS: ToolDef[] = [
   },
   {
     name: 'next_turn',
-    description: 'Передать ход следующему участнику боя по инициативе. Вызывай после каждого хода.',
+    description: 'Передать ход следующему участнику боя, если его ход прошёл без атаки (бег, разговор, укрытие). После атак ход переходит сам.',
     schema: obj({}),
     run: (c) => act.nextTurn(c),
   },
@@ -141,6 +141,9 @@ const TOOLS: ToolDef[] = [
     run: (c, i) => act.remember(c, { fact: i.fact, location: i.location || null }),
   },
 ];
+
+/** The tools as plain data: for a host that takes its own tool format (claude.ai pages). */
+export const TOOL_LIST = TOOLS.map(({ name, description, schema }) => ({ name, description, schema }));
 
 /** Tool definitions for the API, in a fixed order so the prompt cache holds. */
 export const API_TOOLS: BetaTool[] = TOOLS.map((t) => ({

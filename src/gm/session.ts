@@ -35,7 +35,7 @@ export interface StreamLike {
   finalMessage(): Promise<BetaMessage>;
 }
 export interface GmClient {
-  beta: { messages: { stream(params: BetaMessageStreamParams): StreamLike } };
+  beta: { messages: { stream(params: BetaMessageStreamParams, options?: { signal?: AbortSignal }): StreamLike } };
 }
 
 export interface TurnHooks {
@@ -43,6 +43,8 @@ export interface TurnHooks {
   onText?: (delta: string) => void;
   /** A new feed entry: a roll, a system note, a finished block of narration. */
   onEntry?: (entry: Entry) => void;
+  /** Stops the turn; the campaign goes back to how it was. */
+  signal?: AbortSignal;
 }
 
 export class RefusedError extends Error {}
@@ -119,7 +121,7 @@ export async function playTurn(client: GmClient, c: Campaign, playerText: string
     c.messages.push({ role: 'user', content: [{ type: 'text', text }] });
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      const stream = client.beta.messages.stream(requestFor(c, s));
+      const stream = client.beta.messages.stream(requestFor(c, s), { signal: hooks.signal });
       stream.on('text', (d) => hooks.onText?.(d));
       const message = await stream.finalMessage();
       addUsage(c, message, s);

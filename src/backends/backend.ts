@@ -6,7 +6,7 @@ export interface TurnHooks {
   signal?: AbortSignal;
 }
 
-/** Who plays the game master: Claude through an API key, or through the player's claude.ai account. */
+/** Who plays the game master: Claude through the player's claude.ai account (see claudeai.ts). */
 export interface Backend {
   /** A setup screen shown before anything else, or null when none is needed. */
   setupView(): string | null;

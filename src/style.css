@@ -7,7 +7,7 @@
   --signal: #ff0000;
   --dim: #92988d;
   --line: #2b2e28;
-  --mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   color-scheme: dark;
 }
 

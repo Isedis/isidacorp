@@ -31,7 +31,7 @@ const use = <T,>(name: string): Promise<T | null> => (claude ? (claude.use(name)
 
 /** Database documents are at most 256 KiB: the oldest feed entries are let go before that. */
 function fitted(c: Campaign): Campaign {
-  const copy = { ...c, messages: [] };
+  const copy = { ...c };
   while (JSON.stringify(copy).length > 200_000 && copy.feed.length > 40) copy.feed = copy.feed.slice(Math.floor(copy.feed.length / 4));
   return copy;
 }

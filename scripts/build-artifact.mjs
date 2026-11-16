@@ -1,5 +1,6 @@
 // Builds the claude.ai artifact: one self-contained page (scripts, styles and the studio mark
 // inlined), written as page content for the Artifact skeleton. Output: dist-artifact/isida.html.
+// Publish it with the Artifact tool from the same file path to keep the link.
 import { build } from 'vite';
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';

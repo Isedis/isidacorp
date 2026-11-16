@@ -2,7 +2,6 @@
  * The game master's tools: the model asks, the engine rolls. Schemas are strict and are also
  * checked here, since streamed tool input is not validated by the API.
  */
-import type { BetaTool } from '@anthropic-ai/sdk/resources/beta/messages/messages';
 import * as act from '../engine/actions';
 import { ENEMIES, SKILL_IDS, WEAPONS } from '../engine/content';
 import type { Campaign } from '../engine/campaign';
@@ -142,17 +141,8 @@ const TOOLS: ToolDef[] = [
   },
 ];
 
-/** The tools as plain data: for a host that takes its own tool format (claude.ai pages). */
+/** The tools as plain data, in a fixed order, for claude.ai's page tools. */
 export const TOOL_LIST = TOOLS.map(({ name, description, schema }) => ({ name, description, schema }));
-
-/** Tool definitions for the API, in a fixed order so the prompt cache holds. */
-export const API_TOOLS: BetaTool[] = TOOLS.map((t) => ({
-  name: t.name,
-  description: t.description,
-  input_schema: t.schema as unknown as BetaTool['input_schema'],
-  strict: true,
-  eager_input_streaming: true,
-}));
 
 /** Checks a value against our strict schema subset; returns the first problem or null. */
 export function validate(schema: Schema, value: unknown, path = 'input'): string | null {

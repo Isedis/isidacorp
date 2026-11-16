@@ -1,6 +1,6 @@
 // Plays a short session of the artifact build in a phone-sized browser, with claude.ai's
 // runtime replaced by a scripted stand-in whose "Claude" calls the page tools. Screenshots
-// every screen. Usage: npm run build:artifact; NODE_PATH=$(npm root -g) node scripts/e2e-artifact.cjs <out-dir>
+// every screen. Usage: npm run build; NODE_PATH=$(npm root -g) node scripts/e2e-artifact.cjs <out-dir>
 const { chromium } = require('playwright');
 const fs = require('fs');
 const OUT = process.argv[2];

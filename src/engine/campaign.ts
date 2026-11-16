@@ -1,4 +1,3 @@
-import type { BetaMessageParam } from '@anthropic-ai/sdk/resources/beta/messages/messages';
 import type { Character } from './character';
 
 /** One line of the story feed the player reads; the API history is kept separately. */
@@ -33,15 +32,6 @@ export interface Quest {
   note: string;
 }
 
-export interface Usage {
-  input: number;
-  output: number;
-  cacheRead: number;
-  cacheWrite: number;
-  /** Spent so far, in US dollars, by the model prices at the time. */
-  dollars: number;
-}
-
 export interface Campaign {
   version: 1;
   id: string;
@@ -54,13 +44,10 @@ export interface Campaign {
   /** Where the character is now, in a few words. */
   location: string;
   feed: Entry[];
-  /** The conversation with the model through the API, append-only: thinking blocks stay valid only if it never changes. */
-  messages: BetaMessageParam[];
   /** Recent exchanges as plain text, for a master that remembers nothing between calls (claude.ai). */
   transcript: { player: string; gm: string }[];
   /** What happened before the transcript, as the master summarised it. */
   summary: string;
-  usage: Usage;
   nextEnemyId: number;
 }
 
@@ -75,10 +62,8 @@ export function newCampaign(character: Character): Campaign {
     facts: [],
     location: 'Исида, Нижний город',
     feed: [],
-    messages: [],
     transcript: [],
     summary: '',
-    usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, dollars: 0 },
     nextEnemyId: 1,
   };
 }

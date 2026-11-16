@@ -1,6 +1,6 @@
 import type { Campaign } from './engine/campaign';
 
-/** Where a campaign is kept: the phone's browser, or the artifact's private database. */
+/** Where a campaign is kept: the artifact's private database, or this browser as a fallback. */
 export interface Store {
   load(): Promise<Campaign | null>;
   /** False when it could not be kept (storage full, offline): the player is told, the game goes on. */
@@ -30,7 +30,9 @@ export const writeLocal = (key: string, value: string | null): boolean => {
 export function revive(raw: unknown): Campaign | null {
   const c = raw as Campaign | null;
   if (!c || c.version !== 1 || !c.character || !Array.isArray(c.feed)) return null;
-  c.messages ??= [];
+  // Fields of the removed API-key version.
+  delete (c as Partial<Record<'messages' | 'usage', unknown>>).messages;
+  delete (c as Partial<Record<'messages' | 'usage', unknown>>).usage;
   c.transcript ??= [];
   c.summary ??= '';
   return c;

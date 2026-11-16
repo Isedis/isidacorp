@@ -2,9 +2,10 @@
 
 Текстовая ролевая игра в киберпанке с ИИ-мастером (Claude) для телефона. Vite + TypeScript, без фреймворка. Isidacorp — студия автора; игра называется «Исида». Корпорация «Исидакорп» внутри мира — пасхалка, оставлена по желанию автора.
 
-Две сборки с общим движком и интерфейсом:
-- **Артефакт claude.ai (основная):** `npm run build:artifact` → `dist-artifact/isida.html`, публикуется инструментом Artifact (тот же путь файла сохраняет ссылку): https://claude.ai/artifact/2YYQ579YymR8HPYcFvX8pj. Мастер — `claude.use("sample")` на подписке игрока (`modelTier: 'complex'`), движок — функции страницы (`tools`), кампания — `db` в `data/users/<id>/isida-campaign` (резерв — localStorage). Возможности: `sample`, `db`, `user`.
-- **Сайт с ключом API (запасной, не выкладывается):** `npm run build` → `dist/`, ключ игрока в localStorage. Автодеплоя нет: игра живёт в артефакте. GitHub (`Isedis/isidacorp`, `main`) — хранилище кода.
+Игра — артефакт claude.ai: `npm run build` → `dist-artifact/isida.html`, публикуется инструментом Artifact с того же пути файла (ссылка сохраняется): https://claude.ai/artifact/2YYQ579YymR8HPYcFvX8pj.
+
+- Мастер — `claude.use("sample")` на подписке игрока (`modelTier: 'complex'`), движок — функции страницы (`tools`), кампания — `db` в `data/users/<id>/isida-campaign` (резерв — localStorage). Возможности: `sample`, `db`, `user`.
+- GitHub (`Isedis/isidacorp`, `main`) — хранилище кода. Версии с ключом API больше нет.
 
 ## Дизайн
 
@@ -14,26 +15,24 @@
 
 - Принцип: **модель рассказывает и предлагает, движок бросает и хранит.** Модель никогда не меняет хиты, деньги, предметы и не придумывает броски — только через инструменты.
 - `src/engine/` — правила без DOM и без API: кубики (`dice.ts`), контент мира (`content.ts`: классы, оружие, бестиарий), персонаж (`character.ts`), действия (`actions.ts`), состояние кампании (`campaign.ts`).
-- `src/gm/` — мастер: инструменты со строгими схемами и проверкой (`tools.ts`), системный промпт и блок состояния (`prompt.ts`), цикл хода (`session.ts`).
-- `src/ui/app.ts` — экраны (настройка, персонаж, игра, лист, журнал, меню), общий для обеих сборок; `src/ui/splash.ts` — заставка студии.
-- `src/backends/` — кто играет мастера: `api.ts` (ключ API, `gm/session.ts`), `claudeai.ts` (подписка claude.ai, `gm/sampleSession.ts`). `src/storage.ts` — интерфейс хранилища и localStorage; хранилище `db` — в `src/artifact.ts`.
+- `src/gm/` — мастер: инструменты со строгими схемами и проверкой (`tools.ts`), правила для мастера и блок состояния (`prompt.ts`), ход через `sample` и летопись (`sampleSession.ts`).
+- `src/ui/app.ts` — экраны (настройка, персонаж, игра, лист, журнал, меню), `src/ui/splash.ts` — заставка студии.
+- `src/backends/claudeai.ts` — мастер на подписке claude.ai (тексты ошибок, расход). `src/storage.ts` — интерфейс хранилища и localStorage; хранилище `db` и запуск — в `src/artifact.ts`.
 - `sample` ничего не помнит между вызовами: каждый ход несёт правила, летопись (`summary`), последние сцены (`transcript`, до 14) и блок состояния. Лишние сцены сворачиваются в летопись отдельным вызовом после хода (`foldTranscript`).
 - Механика — SRD 5.2 (CC-BY-4.0), мир и классы — свои. Чужие сеттинги (Cyberpunk RED/2077 и т. п.) и название «D&D» не использовать.
 
-## API Claude
+## Claude в артефакте
 
-- Модель по умолчанию `claude-opus-5-5`, выбор Opus/Sonnet/Haiku 5.5 в настройках; усилие `low/medium/high`.
-- Запрос: `client.beta.messages.stream`, `thinking: adaptive`, авто-кэш `cache_control`, серверная компакция (`compact-2026-01-12`), `drop_block` для устаревших размышлений, `fallbacks: 'default'` (`server-side-fallback-2026-07-01`) для Opus и Sonnet.
-- **История только дописывается.** `SYSTEM` и набор инструментов заморожены на всю кампанию (иначе ломаются кэш и блоки размышлений). Состояние приходит в каждом сообщении игрока блоком `[СОСТОЯНИЕ]`. При ошибке ход откатывается целиком (`playTurn` восстанавливает кампанию).
-- Ключ API хранится в localStorage телефона, клиент создаётся с `dangerouslyAllowBrowser`.
-- Меняешь инструменты или промпт — у старых кампаний меняется префикс. Блоки размышлений до изменения отбрасываются (`block_binding.prefix_mismatch_behavior: 'drop_block'`, бета `thinking-binding-controls-2026-08-01`), без этого новые аккаунты получили бы 400. Кэш перестроится один раз.
+- `sample` с `tools`: каждый ход — несколько обращений подряд, их число ограничено платформой. Поэтому ход в бою передаётся сам после атаки, а промпт просит вызывать действия нескольких врагов сразу.
+- Ошибки `sample` приходят как `{code}`; тексты для игрока — в `ClaudeAiBackend.describe`. При любой ошибке ход откатывается целиком.
+- Документ в `db` — не больше 256 КиБ: `fitted()` в `artifact.ts` отрезает старые записи ленты.
+- Публикация: возможности `{sample: {}, db: {}, user: {}}`; при повторной публикации того же файла их можно не передавать.
 
 ## Проверка
 
 - `npm test` и `npm run build` перед каждым коммитом: `npm test > /dev/null && npm run build && git commit …`.
-- Тесты цикла хода — с подставным клиентом (`tests/session.test.ts`) и подставным `sample` (`tests/sample.test.ts`). Живой API в разработке не вызывается.
-- Артефакт в браузере: `npm run build:artifact`, затем `NODE_PATH=$(npm root -g) node scripts/e2e-artifact.cjs /tmp/shots` — подставной `window.claude`, скриншоты экранов.
-- Скриншоты в 390×844: собрать, `npx vite preview --port 4190`, `NODE_PATH=$(npm root -g) node scripts/e2e.cjs /tmp/shots` — короткая сессия с подменой API потоком SSE, скриншоты каждого экрана.
+- Тесты хода — с подставным `sample` (`tests/sample.test.ts`); инструменты и промпт — `tests/tools.test.ts`.
+- Артефакт в браузере: `npm run build`, затем `NODE_PATH=$(npm root -g) node scripts/e2e-artifact.cjs /tmp/shots` — подставной `window.claude`, скриншоты экранов.
 
 ## Как работать с автором
 

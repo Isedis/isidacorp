@@ -4,7 +4,7 @@
 
 Две сборки с общим движком и интерфейсом:
 - **Артефакт claude.ai (основная):** `npm run build:artifact` → `dist-artifact/isida.html`, публикуется инструментом Artifact (тот же путь файла сохраняет ссылку): https://claude.ai/artifact/2YYQ579YymR8HPYcFvX8pj. Мастер — `claude.use("sample")` на подписке игрока (`modelTier: 'complex'`), движок — функции страницы (`tools`), кампания — `db` в `data/users/<id>/isida-campaign` (резерв — localStorage). Возможности: `sample`, `db`, `user`.
-- **Сайт с ключом API:** `npm run build` → GitHub Pages (`Isedis/isidacorp`, ветка `main`), ключ игрока в localStorage.
+- **Сайт с ключом API (запасной, не выкладывается):** `npm run build` → `dist/`, ключ игрока в localStorage. Автодеплоя нет: игра живёт в артефакте. GitHub (`Isedis/isidacorp`, `main`) — хранилище кода.
 
 ## Дизайн
 

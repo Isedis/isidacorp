@@ -131,6 +131,8 @@ describe('prompt and tools', () => {
     expect(r.cache_control).toEqual({ type: 'ephemeral' });
     expect(r.betas).toContain('compact-2026-01-12');
     expect(r.fallbacks).toBe('default');
+    expect(r.thinking).toEqual({ type: 'adaptive', block_binding: { prefix_mismatch_behavior: 'drop_block' } });
+    expect(r.betas).toContain('thinking-binding-controls-2026-08-01');
     const h = requestFor(c, { model: 'claude-haiku-5-5', effort: 'low' });
     expect(h.fallbacks).toBeUndefined();
     expect(h.betas).not.toContain('server-side-fallback-2026-07-01');

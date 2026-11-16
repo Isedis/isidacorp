@@ -66,11 +66,13 @@ export function requestFor(c: Campaign, s: Settings): BetaMessageStreamParams {
     messages: c.messages,
     // Caches the whole growing conversation: each turn pays full price only for what is new.
     cache_control: { type: 'ephemeral' },
-    thinking: { type: 'adaptive' },
+    // A game update can change the prompt or tools under an old campaign: thinking blocks made
+    // before it are dropped instead of failing the request.
+    thinking: { type: 'adaptive', block_binding: { prefix_mismatch_behavior: 'drop_block' } },
     output_config: { effort: s.effort },
     // Long campaigns are summarised on the server; the history stays append-only on our side.
     context_management: { edits: [{ type: 'compact_20260112', instructions: COMPACT_INSTRUCTIONS }] },
-    betas: ['compact-2026-01-12', ...(fallback ? ['server-side-fallback-2026-07-01' as const] : [])],
+    betas: ['compact-2026-01-12', 'thinking-binding-controls-2026-08-01', ...(fallback ? ['server-side-fallback-2026-07-01' as const] : [])],
     ...(fallback ? { fallbacks: 'default' as const } : {}),
   };
 }

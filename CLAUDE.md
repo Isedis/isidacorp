@@ -13,10 +13,10 @@
 ## API Claude
 
 - Модель по умолчанию `claude-opus-5-5`, выбор Opus/Sonnet/Haiku 5.5 в настройках; усилие `low/medium/high`.
-- Запрос: `client.beta.messages.stream`, `thinking: adaptive`, авто-кэш `cache_control`, серверная компакция (`compact-2026-01-12`), `fallbacks: 'default'` (`server-side-fallback-2026-07-01`) для Opus и Sonnet.
+- Запрос: `client.beta.messages.stream`, `thinking: adaptive`, авто-кэш `cache_control`, серверная компакция (`compact-2026-01-12`), `drop_block` для устаревших размышлений, `fallbacks: 'default'` (`server-side-fallback-2026-07-01`) для Opus и Sonnet.
 - **История только дописывается.** `SYSTEM` и набор инструментов заморожены на всю кампанию (иначе ломаются кэш и блоки размышлений). Состояние приходит в каждом сообщении игрока блоком `[СОСТОЯНИЕ]`. При ошибке ход откатывается целиком (`playTurn` восстанавливает кампанию).
 - Ключ API хранится в localStorage телефона, клиент создаётся с `dangerouslyAllowBrowser`.
-- Меняешь инструменты или промпт — старые кампании продолжатся с новым префиксом: кэш и размышления сбросятся один раз, это допустимо.
+- Меняешь инструменты или промпт — у старых кампаний меняется префикс. Блоки размышлений до изменения отбрасываются (`block_binding.prefix_mismatch_behavior: 'drop_block'`, бета `thinking-binding-controls-2026-08-01`), без этого новые аккаунты получили бы 400. Кэш перестроится один раз.
 
 ## Проверка
 
